@@ -395,6 +395,8 @@ def build_molecule(molecule, length, para_weight):
     f.close()
     monomer_sequence = random_sequence(para_weight, length)
     molecule_string = '{}'
+    if length == 0:
+        length = 1
 
     for idx, config in enumerate(monomer_sequence):
         if idx == 0: # append template, but not brackets
