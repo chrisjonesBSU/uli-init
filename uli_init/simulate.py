@@ -114,6 +114,13 @@ class Simulation():
             box_updater.disable()
 
             # Set up new gsd and log dumps for actual simulation
+            gsd_restart = hoomd.dump.gsd(
+                "restart.gsd",
+                period=self.gsd_write,
+                group=_all,
+                truncate=True,
+                phase=0)
+
             hoomd.dump.gsd("sim_traj.gsd",
                            period=self.gsd_write,
                            group=_all,
@@ -128,7 +135,7 @@ class Simulation():
             integrator.set_params(kT=kT)
             integrator.randomize_velocities(seed=self.seed)
             hoomd.run(n_steps)
-
+            gsd_restart.write_restart()
 
     def anneal(self,
               kT_init=None,
@@ -171,6 +178,13 @@ class Simulation():
             box_updater.disable()
 
             # Set up new log and gsd files for simulation:
+            gsd_restart = hoomd.dump.gsd(
+                "restart.gsd",
+                period=self.gsd_write,
+                group=_all,
+                truncate=True,
+                phase=0)
+
             hoomd.dump.gsd("sim_traj.gsd",
                            period=self.gsd_write,
                            group=_all,
@@ -191,6 +205,8 @@ class Simulation():
                 integrator.randomize_velocities(seed=self.seed)
                 hoomd.run(n_steps)
                 print()
+            gsd.restart.write_restart()
+
 
 
 class System():
