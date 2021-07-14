@@ -3,20 +3,15 @@ import json
 import operator
 import os
 import random
-import time
 from warnings import warn
 
 import ele
 import foyer
 import gsd
-import hoomd
-import hoomd.md
 import mbuild as mb
 import numpy as np
 import scipy.optimize
 from foyer import Forcefield
-from hoomd.md import wall
-from mbuild.formats.hoomd_simulation import create_hoomd_simulation
 from mbuild.lib.recipes import Polymer
 from mbuild.coordinate_transform import z_axis_transform
 from scipy.special import gamma
@@ -225,12 +220,12 @@ class Initialize:
         if system.type == "pack":
             system_init = self.pack()
         elif system.type == "stack":
-            system_init = self.stack()
+            system_init = self.stack(**kwargs)
         elif system.type == "custom":
             system_init = self.custom(**kwargs)
         else:
             raise ValueError(
-                    "Valid system types are 'pack', 'stack', and 'custom'."
+                    f"Valid system types are 'pack', 'stack', and 'custom'."
                     "You passed in {system.type}"
                     )
 
@@ -253,7 +248,7 @@ class Initialize:
         system.box = mb.box.Box([self.L, self.L, self.L])
         return system
 
-    def stack(self, separation=1.5):
+    def stack(self, separation=1.5, edge_buffer=0):
         mb_compounds = self._generate_compounds()
         self.L = self._calculate_L() * self.system.expand_factor
         system = mb.Compound()
@@ -261,7 +256,14 @@ class Initialize:
             z_axis_transform(comp)
             comp.translate(np.array([separation,0,0])*idx)
             system.add(comp)
-        system.box = mb.box.Box([self.L, self.L, self.L])
+
+        box_lengths = np.array(
+                system.get_boundingbox().lengths
+                ) + edge_buffer
+        print(box_lengths)
+        system.box = mb.box.Box(box_lengths)
+        system.box
+        system.translate_to((box_lengths/2))
         return system
 
     def custom(self, file_path):
