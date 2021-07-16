@@ -260,7 +260,6 @@ class Initialize:
         box_lengths = np.array(
                 system.get_boundingbox().lengths
                 ) + edge_buffer
-        print(box_lengths)
         system.box = mb.box.Box(box_lengths)
         system.box
         system.translate_to((box_lengths/2))
